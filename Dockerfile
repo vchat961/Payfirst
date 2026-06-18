@@ -22,6 +22,4 @@ ENV PORT=8080
 ENV NODE_ENV=production
 ENV DB_PATH=/data/deals.sqlite
 
-VOLUME ["/data"]
-
 CMD ["node", "--enable-source-maps", "./artifacts/api-server/dist/index.mjs"]
