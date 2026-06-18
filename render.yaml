@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: escrow-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8080
+      - key: INTASEND_PUBLIC_KEY
+        sync: false
+      - key: INTASEND_SECRET_KEY
+        sync: false
+      - key: ADMIN_KEY
+        sync: false
+    healthCheckPath: /api/healthz
