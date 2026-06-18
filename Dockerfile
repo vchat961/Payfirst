@@ -14,9 +14,14 @@ RUN pnpm install --frozen-lockfile
 
 RUN pnpm --filter @workspace/api-server run build
 
+RUN mkdir -p /data
+
 EXPOSE 8080
 
 ENV PORT=8080
 ENV NODE_ENV=production
+ENV DB_PATH=/data/deals.sqlite
+
+VOLUME ["/data"]
 
 CMD ["node", "--enable-source-maps", "./artifacts/api-server/dist/index.mjs"]
