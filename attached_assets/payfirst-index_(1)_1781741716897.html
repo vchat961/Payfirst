@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>PayFirst – Cash Locked Safely</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f1f5f9;color:#1e293b;font-size:14px;padding-bottom:40px}
+.pf-container{max-width:480px;margin:0 auto;padding:12px}
+
+.pf-header{display:flex;align-items:center;justify-content:space-between;background:#fff;padding:14px 16px;border-radius:16px;border:1px solid #e2e8f0;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+.pf-logo-area{display:flex;align-items:center;gap:10px}
+.pf-logo{width:40px;height:40px;background:linear-gradient(135deg,#16a34a,#059669);border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:16px;box-shadow:0 2px 8px rgba(22,163,74,0.3)}
+.pf-brand{font-size:20px;font-weight:900;color:#0f172a;line-height:1}
+.pf-brand span{color:#16a34a}
+.pf-user-status{font-size:11px;color:#64748b;font-weight:500;margin-top:2px}
+.pf-user-status b{color:#16a34a}
+.pf-badge-live{background:#f0fdf4;border:1px solid #bbf7d0;color:#16a34a;padding:6px 12px;border-radius:99px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px}
+
+.pf-alert{padding:12px 14px;border-radius:12px;font-size:13px;margin-bottom:12px;display:none;align-items:center;gap:8px;font-weight:600;animation:slideDown 0.2s ease}
+.pf-alert.success{background:#dcfce7;color:#15803d;border:1px solid #bbf7d0;display:flex}
+.pf-alert.error{background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;display:flex}
+.pf-alert.info{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;display:flex}
+
+.pf-polling-banner{background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:13px;font-weight:600;color:#1d4ed8;display:none;align-items:center;gap:8px}
+.pf-polling-banner.active{display:flex}
+
+.pf-trust-bar{display:flex;align-items:center;justify-content:center;gap:16px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:10px;margin-bottom:12px}
+.pf-trust-item{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:#475569}
+.pf-trust-item i{color:#16a34a;font-size:15px}
+
+.pf-identity-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.03)}
+.pf-identity-label{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.pf-identity-label i{color:#16a34a}
+.pf-input-wrapper{position:relative;display:flex;align-items:center}
+.pf-input-wrapper i.icon{position:absolute;left:13px;color:#94a3b8;font-size:17px;pointer-events:none}
+.pf-input{width:100%;padding:13px 14px 13px 42px;font-size:14px;border:1.5px solid #e2e8f0;border-radius:10px;font-family:inherit;color:#0f172a;background:#f8fafc;transition:border-color 0.15s,box-shadow 0.15s}
+.pf-input:focus{outline:none;border-color:#16a34a;box-shadow:0 0 0 3px rgba(22,163,74,0.12);background:#fff}
+.pf-identity-verified{display:none;align-items:center;justify-content:space-between;background:#f0fdf4;border:1px solid #bbf7d0;padding:12px 14px;border-radius:12px}
+.pf-verified-info{display:flex;align-items:center;gap:10px}
+
+.pf-tabs{display:flex;background:#fff;border:1px solid #e2e8f0;border-radius:14px;margin-bottom:12px;padding:4px;gap:4px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.pf-tab{flex:1;padding:11px 8px;font-size:13px;background:transparent;color:#64748b;border:none;cursor:pointer;border-radius:10px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.15s}
+.pf-tab.active{background:linear-gradient(135deg,#16a34a,#059669);color:#fff;box-shadow:0 2px 8px rgba(22,163,74,0.25)}
+.pf-section{display:none}
+.pf-section.active{display:block;animation:fadeIn 0.2s ease-out}
+
+.pf-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.03)}
+.pf-card-title{font-size:13px;font-weight:800;color:#0f172a;margin-bottom:16px;display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:0.4px}
+.pf-card-title i{color:#16a34a;font-size:16px}
+.pf-form-group{margin-bottom:14px}
+.pf-form-group:last-child{margin-bottom:0}
+.pf-form-group label{display:block;font-weight:700;font-size:11px;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
+
+.pf-toggle-container{background:#f8fafc;padding:14px;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:16px}
+.pf-toggle-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.pf-toggle-label{font-weight:700;font-size:13px;color:#334155}
+.pf-toggle-desc{font-size:11px;color:#94a3b8;font-weight:500;line-height:1.5;padding-right:60px}
+.pf-switch{position:relative;display:inline-block;width:46px;height:26px;flex-shrink:0}
+.pf-switch input{opacity:0;width:0;height:0}
+.pf-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#cbd5e1;transition:.2s;border-radius:26px}
+.pf-slider:before{position:absolute;content:"";height:20px;width:20px;left:3px;bottom:3px;background:#fff;transition:.2s;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+input:checked+.pf-slider{background:#16a34a}
+input:checked+.pf-slider:before{transform:translateX(20px)}
+
+.pf-receipt{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;border-radius:14px;padding:16px;margin-bottom:16px}
+.pf-receipt-title{font-size:11px;font-weight:800;color:#15803d;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.pf-receipt-row{display:flex;justify-content:space-between;font-size:13px;color:#166534;padding:4px 0;font-weight:600}
+.pf-receipt-row.total{font-weight:900;color:#14532d;border-top:1.5px dashed #86efac;margin-top:8px;padding-top:10px;font-size:16px}
+
+.pf-btn{padding:14px 16px;font-size:14px;border-radius:12px;border:none;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:all 0.15s;user-select:none;width:100%}
+.pf-btn-go{background:linear-gradient(135deg,#16a34a,#059669);color:#fff;box-shadow:0 4px 14px rgba(22,163,74,0.3)}
+.pf-btn-go:active{transform:scale(0.98)}
+.pf-btn-release{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;box-shadow:0 4px 14px rgba(37,99,235,0.3);margin-top:10px}
+.pf-btn-release:active{transform:scale(0.98)}
+.pf-btn-wa{background:#25D366;color:#fff;box-shadow:0 4px 14px rgba(37,211,102,0.3);margin-top:8px}
+.pf-btn-wa:active{transform:scale(0.98)}
+.pf-btn-sub{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;width:auto;padding:8px 14px;font-size:12px;border-radius:8px}
+.pf-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none!important}
+.pf-verify-btn{margin-top:10px}
+
+.pf-empty{text-align:center;padding:50px 20px;color:#cbd5e1}
+.pf-empty i{font-size:52px;display:block;margin-bottom:12px;color:#e2e8f0}
+.pf-empty-title{font-weight:800;font-size:15px;color:#94a3b8;margin-bottom:4px}
+.pf-empty-sub{font-size:12px;color:#cbd5e1}
+
+.pf-deal-box{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.03);margin-bottom:10px;transition:border-color 0.3s,box-shadow 0.3s}
+.pf-deal-box.live-updating{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(59,130,246,0.1)}
+.pf-deal-box.just-paid{border-color:#86efac;box-shadow:0 0 0 3px rgba(22,163,74,0.15);animation:paidPulse 0.6s ease}
+.pf-deal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.pf-deal-id{font-size:10px;color:#cbd5e1;font-weight:700;text-transform:uppercase;letter-spacing:0.3px}
+.pf-deal-title{font-size:16px;font-weight:800;color:#0f172a;margin-top:2px}
+.pf-deal-price{font-size:18px;font-weight:900;color:#16a34a;text-align:right;white-space:nowrap}
+.pf-deal-price span{display:block;font-size:10px;color:#94a3b8;font-weight:600;text-align:right}
+.pf-deal-meta{background:#f8fafc;border-radius:10px;padding:10px 12px;margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.pf-deal-meta-row{display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b;font-weight:600}
+.pf-deal-meta-row i{color:#94a3b8;font-size:14px;flex-shrink:0}
+.pf-badge{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:99px;font-size:11px;font-weight:700;margin-top:6px}
+.b-safe{background:#dcfce7;color:#15803d;border:1px solid #bbf7d0}
+.b-paid{background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe}
+.b-pending{background:#fef9c3;color:#854d0e;border:1px solid #fde68a}
+.b-failed{background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5}
+.b-released{background:#f3e8ff;color:#7c3aed;border:1px solid #d8b4fe}
+
+.pf-live-strip{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#1d4ed8;margin-top:8px;padding:8px 10px;background:#eff6ff;border-radius:8px;border:1px solid #bfdbfe}
+.pf-live-strip.paid{background:#f0fdf4;color:#15803d;border-color:#bbf7d0}
+.pf-live-strip.failed{background:#fee2e2;color:#b91c1c;border-color:#fca5a5}
+.pf-live-strip.released{background:#f3e8ff;color:#7c3aed;border-color:#d8b4fe}
+.pf-receipt-pill{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:6px 10px;font-size:11px;color:#15803d;font-weight:700;margin-top:6px;display:flex;align-items:center;gap:5px}
+
+.pf-deal-actions{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+
+.pf-watermark{display:flex;justify-content:center;padding:20px 0 8px}
+.pf-wm-inner{background:linear-gradient(135deg,#16a34a,#059669);color:#fff;padding:10px 20px;border-radius:50px;font-size:11px;font-weight:800;letter-spacing:0.5px;display:inline-flex;align-items:center;gap:6px;box-shadow:0 3px 10px rgba(22,163,74,0.2)}
+.pf-wm-inner span{color:#fef08a}
+
+.spin{animation:spin 1s linear infinite;display:inline-block}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideDown{from{transform:translateY(-8px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes paidPulse{0%{transform:scale(1)}40%{transform:scale(1.015)}100%{transform:scale(1)}}
+</style>
+</head>
+<body>
+<div class="pf-container">
+
+  <div class="pf-header">
+    <div class="pf-logo-area">
+      <div class="pf-logo">PF</div>
+      <div>
+        <div class="pf-brand">Pay<span>First</span></div>
+        <div class="pf-user-status">Wallet: <b id="header-user-phone">Not Verified</b></div>
+      </div>
+    </div>
+    <div class="pf-badge-live"><i class="ti ti-shield-check"></i> Vault Active</div>
+  </div>
+
+  <div id="status-alert" class="pf-alert"></div>
+  <div id="polling-banner" class="pf-polling-banner">
+    <i class="ti ti-loader-2 spin"></i>
+    <span id="polling-text">Waiting for M-Pesa PIN...</span>
+  </div>
+
+  <div class="pf-identity-card">
+    <div class="pf-identity-label"><i class="ti ti-device-mobile"></i> Your M-Pesa Number</div>
+    <div id="box-unverified">
+      <div class="pf-input-wrapper">
+        <i class="ti ti-device-mobile icon"></i>
+        <input type="tel" id="inline-phone-input" class="pf-input" placeholder="e.g. 0712 345 678"/>
+      </div>
+      <button class="pf-btn pf-btn-go pf-verify-btn" onclick="verifyInlineIdentity()">
+        <i class="ti ti-circle-check"></i> Verify My Number
+      </button>
+    </div>
+    <div class="pf-identity-verified" id="box-verified">
+      <div class="pf-verified-info">
+        <i class="ti ti-circle-check-filled" style="color:#16a34a;font-size:22px"></i>
+        <div>
+          <div style="font-weight:800;font-size:13px;color:#15803d">Wallet Verified</div>
+          <div style="font-size:14px;color:#16a34a;font-weight:700" id="verified-phone-label">—</div>
+        </div>
+      </div>
+      <button class="pf-btn pf-btn-sub" onclick="clearInlineIdentity()">Change</button>
+    </div>
+  </div>
+
+  <div class="pf-trust-bar">
+    <div class="pf-trust-item"><i class="ti ti-discount-check-filled"></i> 10,000+ Deals</div>
+    <div class="pf-trust-item"><i class="ti ti-shield-lock-filled"></i> Verified Sellers</div>
+    <div class="pf-trust-item"><i class="ti ti-lock-filled"></i> Escrow Safe</div>
+  </div>
+
+  <div class="pf-tabs">
+    <button class="pf-tab active" id="btn-tab-index" onclick="openSection('index')">
+      <i class="ti ti-smart-home"></i> My Deals
+    </button>
+    <button class="pf-tab" id="btn-tab-create" onclick="openSection('create')">
+      <i class="ti ti-plus"></i> New Deal
+    </button>
+  </div>
+
+  <div id="sec-index" class="pf-section active">
+    <div id="deals-wrapper"></div>
+  </div>
+
+  <div id="sec-create" class="pf-section">
+    <div class="pf-card">
+      <div class="pf-card-title"><i class="ti ti-package"></i> Item Details</div>
+      <div class="pf-form-group">
+        <label>Item Name</label>
+        <div class="pf-input-wrapper">
+          <i class="ti ti-tag icon"></i>
+          <input type="text" id="custom-title" class="pf-input" placeholder="e.g. Black Nike Jacket"/>
+        </div>
+      </div>
+      <div class="pf-form-group">
+        <label>Price (KES)</label>
+        <div class="pf-input-wrapper">
+          <i class="ti ti-coin icon"></i>
+          <input type="number" id="custom-price" class="pf-input" placeholder="e.g. 2500" oninput="calculateCustomPrices()"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="pf-card">
+      <div class="pf-card-title"><i class="ti ti-store"></i> Seller Info</div>
+      <div class="pf-form-group">
+        <label>Seller Name</label>
+        <div class="pf-input-wrapper">
+          <i class="ti ti-user icon"></i>
+          <input type="text" id="custom-seller" class="pf-input" placeholder="e.g. John Omondi"/>
+        </div>
+      </div>
+      <div class="pf-form-group">
+        <label>Seller Phone</label>
+        <div class="pf-input-wrapper">
+          <i class="ti ti-phone icon"></i>
+          <input type="tel" id="custom-phone" class="pf-input" placeholder="e.g. 0722 000 000"/>
+        </div>
+      </div>
+      <div class="pf-form-group">
+        <label>Delivery Instructions</label>
+        <div class="pf-input-wrapper">
+          <i class="ti ti-truck-delivery icon"></i>
+          <input type="text" id="custom-rider" class="pf-input" placeholder="e.g. Self pick-up at CBD"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="pf-card">
+      <div class="pf-card-title"><i class="ti ti-settings"></i> Payment Options</div>
+      <div class="pf-toggle-container">
+        <div class="pf-toggle-top">
+          <div class="pf-toggle-label">Tuma na ya Kutoa</div>
+          <label class="pf-switch">
+            <input type="checkbox" id="kutoa-toggle" onchange="calculateCustomPrices()"/>
+            <span class="pf-slider"></span>
+          </label>
+        </div>
+        <div class="pf-toggle-desc">Adds KES 34 so the seller can withdraw the money from M-Pesa after receiving it</div>
+      </div>
+
+      <div class="pf-receipt">
+        <div class="pf-receipt-title"><i class="ti ti-receipt"></i> Payment Summary</div>
+        <div class="pf-receipt-row"><span>Item Price</span><span id="math-item">KES 0</span></div>
+        <div class="pf-receipt-row" id="math-row-withdrawal" style="display:none"><span>Withdrawal Fee</span><span id="math-withdrawal">KES 34</span></div>
+        <div class="pf-receipt-row"><span>PayFirst Protection</span><span>KES 50</span></div>
+        <div class="pf-receipt-row total"><span>Total You Pay</span><span id="math-total">KES 0</span></div>
+      </div>
+
+      <button class="pf-btn pf-btn-go" id="stk-btn" onclick="lockMoneyFromCustomForm()">
+        <i class="ti ti-lock"></i> Lock Money & Send STK Push
+      </button>
+    </div>
+  </div>
+
+  <div class="pf-watermark">
+    <div class="pf-wm-inner"><i class="ti ti-cpu"></i> Engineered by <span>Vicky chathar</span></div>
+  </div>
+
+</div>
+<script>
+const API_BASE = "https://7bd810b1-ced1-4b95-8248-fc3f9cf0ec8e-00-237h8vm8w4dmm.spock.replit.dev";
+const LS_DEALS_KEY = "payfirst_deals_v2";
+const LS_PHONE_KEY = "payfirst_phone_v1";
+
+let verifiedUserIdentity = "";
+let currentDeals = [];
+const liveStreams = {};
+
+// ---- localStorage helpers ----
+function saveDeals() {
+  try { localStorage.setItem(LS_DEALS_KEY, JSON.stringify(currentDeals)); } catch(_) {}
+}
+function loadDeals() {
+  try {
+    const raw = localStorage.getItem(LS_DEALS_KEY);
+    if (raw) currentDeals = JSON.parse(raw);
+  } catch(_) { currentDeals = []; }
+}
+function saveName(phone) {
+  try { localStorage.setItem(LS_PHONE_KEY, phone); } catch(_) {}
+}
+function loadSavedPhone() {
+  try { return localStorage.getItem(LS_PHONE_KEY) || ""; } catch(_) { return ""; }
+}
+
+// ---- Phone validation ----
+function validateKenyanPhone(p) {
+  return /^(?:254|\+254|0)?([71][0-9]{8})$/.test(p.replace(/[\s()\-]/g,''));
+}
+
+function verifyInlineIdentity() {
+  const raw = document.getElementById('inline-phone-input').value.trim();
+  if (!validateKenyanPhone(raw)) { showAlert('<i class="ti ti-alert-circle"></i> Enter a valid Kenyan number (07XX or 01XX)', 'error'); return; }
+  verifiedUserIdentity = raw;
+  saveName(raw);
+  document.getElementById('header-user-phone').textContent = raw;
+  document.getElementById('box-unverified').style.display = 'none';
+  document.getElementById('box-verified').style.display = 'flex';
+  document.getElementById('verified-phone-label').textContent = raw;
+  showAlert('<i class="ti ti-circle-check"></i> Wallet verified! You can now lock money.', 'success');
+}
+
+function clearInlineIdentity() {
+  verifiedUserIdentity = "";
+  document.getElementById('header-user-phone').textContent = "Not Verified";
+  document.getElementById('box-verified').style.display = 'none';
+  document.getElementById('box-unverified').style.display = 'flex';
+  document.getElementById('inline-phone-input').value = '';
+}
+
+function openSection(tabId) {
+  document.querySelectorAll('.pf-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.pf-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('sec-' + tabId).classList.add('active');
+  document.getElementById('btn-tab-' + tabId).classList.add('active');
+}
+
+function calculateCustomPrices() {
+  const price = parseFloat(document.getElementById('custom-price').value) || 0;
+  const kutoa = document.getElementById('kutoa-toggle').checked;
+  document.getElementById('math-row-withdrawal').style.display = kutoa ? 'flex' : 'none';
+  document.getElementById('math-item').textContent = 'KES ' + price.toLocaleString();
+  document.getElementById('math-total').textContent = 'KES ' + (price + (kutoa ? 34 : 0) + 50).toLocaleString();
+}
+
+// ---- Lock money ----
+async function lockMoneyFromCustomForm() {
+  if (!verifiedUserIdentity) { showAlert('<i class="ti ti-alert-circle"></i> Verify your phone number first!', 'error'); return; }
+  const title  = document.getElementById('custom-title').value.trim();
+  const price  = parseFloat(document.getElementById('custom-price').value);
+  const seller = document.getElementById('custom-seller').value.trim();
+  const phone  = document.getElementById('custom-phone').value.trim();
+  const rider  = document.getElementById('custom-rider').value.trim();
+  const kutoa  = document.getElementById('kutoa-toggle').checked;
+  if (!title) { showAlert('<i class="ti ti-alert-circle"></i> Enter the item name.', 'error'); return; }
+  if (!price || price <= 0) { showAlert('<i class="ti ti-alert-circle"></i> Enter a valid price.', 'error'); return; }
+  const total = price + (kutoa ? 34 : 0) + 50;
+  const btn = document.getElementById('stk-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader-2 spin"></i> Sending to your phone...';
+  try {
+    const res = await fetch(API_BASE + '/api/mpesa/stkpush', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: verifiedUserIdentity, amount: total, accountReference: 'PayFirstVault', transactionDesc: title })
+    });
+    const data = await res.json();
+    if (data.success) {
+      const deal = {
+        id: 'PF-' + Math.floor(Math.random() * 9000 + 1000),
+        title, price, seller, sellerPhone: phone, rider,
+        status: 'pending',
+        checkoutRequestId: data.checkoutRequestId,
+        mpesaReceiptNumber: null,
+        amount: null,
+        createdAt: Date.now()
+      };
+      currentDeals.unshift(deal);
+      saveDeals();
+      drawMainDealsList();
+      openSection('index');
+      showAlert('<i class="ti ti-device-mobile"></i> PIN prompt sent! Enter your M-Pesa PIN — status updates live.', 'info');
+      startLiveStream(deal);
+      showPollingBanner(deal.title);
+
+      // WhatsApp notification to seller if phone provided
+      if (phone && seller) {
+        setTimeout(() => sendSellerWhatsApp(deal), 2000);
+      }
+    } else {
+      showAlert('<i class="ti ti-alert-circle"></i> ' + (data.message || 'STK Push failed. Try again.'), 'error');
+    }
+  } catch (err) {
+    showAlert('<i class="ti ti-wifi-off"></i> Cannot reach server. Check your connection.', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-lock"></i> Lock Money & Send STK Push';
+  }
+}
+
+// ---- Seller WhatsApp notification ----
+function sendSellerWhatsApp(deal) {
+  if (!deal.sellerPhone) return;
+  const name = deal.seller || 'Seller';
+  const msg = `${name}, KES ${deal.price.toLocaleString()} has been locked in PayFirst escrow for your item "${deal.title}". Deliver it and the buyer will release the payment to you. Deal ID: ${deal.id}`;
+  const phone = deal.sellerPhone.replace(/[\s+\-()]/g,'').replace(/^0/, '254');
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+}
+
+// ---- Release payment to seller ----
+async function releasePayment(dealId) {
+  const deal = currentDeals.find(d => d.id === dealId);
+  if (!deal) return;
+  if (!deal.sellerPhone) { showAlert('<i class="ti ti-alert-circle"></i> No seller phone on this deal.', 'error'); return; }
+  if (!confirm(`Release KES ${deal.price.toLocaleString()} to ${deal.seller || deal.sellerPhone}? This cannot be undone.`)) return;
+
+  const btn = document.getElementById('release-btn-' + dealId);
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2 spin"></i> Releasing...'; }
+
+  try {
+    const res = await fetch(API_BASE + '/api/mpesa/release', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: deal.sellerPhone, amount: deal.price, dealId: deal.id })
+    });
+    const data = await res.json();
+    if (data.success) {
+      deal.status = 'released';
+      saveDeals();
+      drawMainDealsList();
+      showAlert('<i class="ti ti-circle-check"></i> KES ' + deal.price.toLocaleString() + ' sent to ' + (deal.seller || deal.sellerPhone) + '!', 'success');
+    } else {
+      showAlert('<i class="ti ti-alert-circle"></i> Release failed: ' + (data.message || 'Try again.'), 'error');
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-send"></i> Release to Seller'; }
+    }
+  } catch (err) {
+    showAlert('<i class="ti ti-wifi-off"></i> Cannot reach server.', 'error');
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-send"></i> Release to Seller'; }
+  }
+}
+
+// ---- Real-time SSE ----
+function startLiveStream(deal) {
+  if (!deal.checkoutRequestId) return;
+  if (liveStreams[deal.checkoutRequestId]) liveStreams[deal.checkoutRequestId].close();
+  const es = new EventSource(API_BASE + '/api/mpesa/status/' + encodeURIComponent(deal.checkoutRequestId));
+  liveStreams[deal.checkoutRequestId] = es;
+
+  es.onmessage = function(e) {
+    try {
+      const update = JSON.parse(e.data);
+      deal.status = update.status;
+      if (update.mpesaReceiptNumber) deal.mpesaReceiptNumber = update.mpesaReceiptNumber;
+      if (update.amount)             deal.amount = update.amount;
+      saveDeals();
+      drawMainDealsList();
+      hidePollingBanner();
+      if (update.status === 'paid') {
+        showAlert('<i class="ti ti-circle-check"></i> Payment confirmed! ' + deal.title + ' is locked in vault.', 'success');
+        flashDealCard(deal.id);
+        es.close();
+        delete liveStreams[deal.checkoutRequestId];
+      } else if (update.status === 'failed') {
+        showAlert('<i class="ti ti-alert-circle"></i> Payment failed or was cancelled for "' + deal.title + '"', 'error');
+        es.close();
+        delete liveStreams[deal.checkoutRequestId];
+      }
+    } catch (_) {}
+  };
+
+  es.onerror = function() {
+    es.close();
+    delete liveStreams[deal.checkoutRequestId];
+    if (deal.status === 'pending') setTimeout(() => fallbackQuery(deal), 5000);
+  };
+}
+
+async function fallbackQuery(deal) {
+  if (deal.status !== 'pending' || !deal.checkoutRequestId) return;
+  try {
+    const res = await fetch(API_BASE + '/api/mpesa/query', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ checkoutRequestId: deal.checkoutRequestId })
+    });
+    const data = await res.json();
+    if (data.paid) {
+      deal.status = 'paid';
+      saveDeals();
+      drawMainDealsList();
+      hidePollingBanner();
+      showAlert('<i class="ti ti-circle-check"></i> Payment confirmed! ' + deal.title + ' locked in vault.', 'success');
+      flashDealCard(deal.id);
+    }
+  } catch (_) {}
+}
+
+function flashDealCard(dealId) {
+  const card = document.getElementById('deal-' + dealId);
+  if (!card) return;
+  card.classList.remove('live-updating');
+  card.classList.add('just-paid');
+  setTimeout(() => card.classList.remove('just-paid'), 1500);
+}
+
+function showPollingBanner(title) {
+  document.getElementById('polling-banner').classList.add('active');
+  document.getElementById('polling-text').textContent = 'Listening live for PIN on "' + title + '"...';
+}
+function hidePollingBanner() {
+  document.getElementById('polling-banner').classList.remove('active');
+}
+
+function showAlert(txt, cls) {
+  const b = document.getElementById('status-alert');
+  b.className = 'pf-alert ' + cls; b.innerHTML = txt; b.style.display = 'flex';
+  setTimeout(() => { b.style.display = 'none'; }, 7000);
+}
+
+function drawMainDealsList() {
+  const wrap = document.getElementById('deals-wrapper');
+  if (!currentDeals.length) {
+    wrap.innerHTML = '<div class="pf-empty"><i class="ti ti-inbox"></i><div class="pf-empty-title">No deals yet</div><div class="pf-empty-sub">Tap "New Deal" to lock your first payment</div></div>';
+    return;
+  }
+  wrap.innerHTML = currentDeals.map(d => {
+    const isLive = d.status === 'pending' && liveStreams[d.checkoutRequestId];
+
+    const badge = d.status === 'released'
+      ? '<span class="pf-badge b-released"><i class="ti ti-send"></i> Released to Seller</span>'
+      : d.status === 'paid'
+      ? '<span class="pf-badge b-paid"><i class="ti ti-circle-check"></i> Paid & Confirmed</span>'
+      : d.status === 'failed'
+      ? '<span class="pf-badge b-failed"><i class="ti ti-alert-circle"></i> Failed / Cancelled</span>'
+      : d.status === 'pending'
+      ? '<span class="pf-badge b-pending"><i class="ti ti-clock"></i> Awaiting PIN</span>'
+      : '<span class="pf-badge b-safe"><i class="ti ti-shield-check"></i> Locked Safe</span>';
+
+    const liveStrip = isLive
+      ? `<div class="pf-live-strip"><i class="ti ti-loader-2 spin"></i> Live — waiting for your M-Pesa PIN...</div>`
+      : d.status === 'paid'
+      ? `<div class="pf-live-strip paid"><i class="ti ti-circle-check-filled"></i> M-Pesa confirmed ${d.amount ? 'KES ' + Number(d.amount).toLocaleString() : ''}</div>`
+      : d.status === 'released'
+      ? `<div class="pf-live-strip released"><i class="ti ti-send"></i> Funds sent to ${d.seller || d.sellerPhone}</div>`
+      : d.status === 'failed'
+      ? `<div class="pf-live-strip failed"><i class="ti ti-alert-circle"></i> Payment was not completed</div>`
+      : '';
+
+    const receiptPill = d.mpesaReceiptNumber
+      ? `<div class="pf-receipt-pill"><i class="ti ti-receipt"></i> M-Pesa Ref: ${d.mpesaReceiptNumber}</div>`
+      : '';
+
+    const meta = [];
+    if (d.seller) meta.push(`<div class="pf-deal-meta-row"><i class="ti ti-user"></i>${d.seller}${d.sellerPhone ? ' &middot; ' + d.sellerPhone : ''}</div>`);
+    if (d.rider)  meta.push(`<div class="pf-deal-meta-row"><i class="ti ti-truck-delivery"></i>${d.rider}</div>`);
+
+    // Actions: show release button only when paid, show WhatsApp if seller phone exists
+    let actions = '';
+    if (d.status === 'paid' && d.sellerPhone) {
+      actions = `<div class="pf-deal-actions">
+        <button class="pf-btn pf-btn-release" id="release-btn-${d.id}" onclick="releasePayment('${d.id}')">
+          <i class="ti ti-send"></i> Release KES ${d.price.toLocaleString()} to Seller
+        </button>
+        <button class="pf-btn pf-btn-wa" onclick="sendSellerWhatsApp(currentDeals.find(x=>x.id==='${d.id}'))">
+          <i class="ti ti-brand-whatsapp"></i> Notify Seller on WhatsApp
+        </button>
+      </div>`;
+    } else if (d.status === 'paid' && !d.sellerPhone) {
+      actions = `<div class="pf-deal-actions">
+        <button class="pf-btn pf-btn-release" id="release-btn-${d.id}" onclick="releasePayment('${d.id}')">
+          <i class="ti ti-send"></i> Release KES ${d.price.toLocaleString()} to Seller
+        </button>
+      </div>`;
+    }
+
+    const boxClass = 'pf-deal-box' + (isLive ? ' live-updating' : '');
+    return `<div class="${boxClass}" id="deal-${d.id}">
+      <div class="pf-deal-header">
+        <div><div class="pf-deal-id">${d.id}</div><div class="pf-deal-title">${d.title}</div>${badge}</div>
+        <div class="pf-deal-price">KES ${d.price.toLocaleString()}<span>item price</span></div>
+      </div>
+      ${liveStrip}
+      ${receiptPill}
+      ${meta.length ? `<div class="pf-deal-meta">${meta.join('')}</div>` : ''}
+      ${actions}
+    </div>`;
+  }).join('');
+}
+
+// ---- Boot ----
+loadDeals();
+const savedPhone = loadSavedPhone();
+if (savedPhone) {
+  document.getElementById('inline-phone-input').value = savedPhone;
+}
+drawMainDealsList();
+</script>
+</body>
+</html>
