@@ -25,7 +25,20 @@ app.use(
     },
   }),
 );
-app.use(cors());
+
+// Tighten CORS: explicitly allow common methods and the custom x-admin-key header
+// Enable credentials in case the frontend needs to send cookies or auth headers.
+const corsOptions = {
+  origin: true as const,
+  methods: ["GET", "POST", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "x-admin-key"],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+// Ensure preflight requests are handled for all routes
+app.options("*", cors(corsOptions));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
