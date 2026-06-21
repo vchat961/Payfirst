@@ -5,6 +5,8 @@ import { dealsTable } from "../lib/deals-schema";
 
 const router: IRouter = Router();
 
+const DEFAULT_CALLBACK = process.env["STK_CALLBACK_URL"] ?? "https://escrow-api-production-f7c3.up.railway.app/api/mpesa/callback";
+
 // STK Push: initiate M-Pesa STK Push to a buyer's phone
 router.post("/mpesa/stkpush", async (req, res) => {
   const { phone, amount, email, narrative, callbackUrl } = req.body as {
@@ -27,26 +29,21 @@ router.post("/mpesa/stkpush", async (req, res) => {
   );
 
   try {
-    // The SDK has varied method names in examples; attempt common entry points.
     const client: any = (intasend as any).mpayment ? (intasend as any).mpayment() : (intasend as any).mpesa ? (intasend as any).mpesa() : intasend;
+
+    const payload: any = {
+      phone_number: phone,
+      amount,
+      email: email ?? undefined,
+      narrative: narrative ?? "Payment",
+      callback_url: callbackUrl ?? DEFAULT_CALLBACK,
+    };
 
     let result: any;
     if (typeof client.mpesaStkPush === "function") {
-      result = await client.mpesaStkPush({
-        phone_number: phone,
-        amount,
-        email: email ?? undefined,
-        narrative: narrative ?? "Payment",
-        callback_url: callbackUrl ?? undefined,
-      });
+      result = await client.mpesaStkPush(payload);
     } else if (typeof (intasend as any).mpesaStkPush === "function") {
-      result = await (intasend as any).mpesaStkPush({
-        phone_number: phone,
-        amount,
-        email: email ?? undefined,
-        narrative: narrative ?? "Payment",
-        callback_url: callbackUrl ?? undefined,
-      });
+      result = await (intasend as any).mpesaStkPush(payload);
     } else {
       res.status(500).json({ success: false, message: "STK push method not available in SDK" });
       return;
@@ -113,6 +110,52 @@ router.post("/mpesa/query", async (req, res) => {
     const message = err instanceof Error ? err.message : "Query failed";
     req.log?.error?.({ err, checkoutRequestId, transactionId }, "M-Pesa query failed");
     res.status(502).json({ success: false, message });
+  }
+});
+
+// Callback endpoint for IntaSend / M-Pesa to post status updates
+router.post("/mpesa/callback", async (req, res) => {
+  // IntaSend will POST webhook data here. Just accept and persist minimal info.
+  const body = req.body;
+  try {
+    // Log the callback for debugging
+    req.log?.info?.({ body }, "Received STK callback");
+
+    // Attempt to update deal status if we can find a dealId or related identifier
+    // Common fields: checkoutRequestId, transactionId, metadata, reference
+    const checkoutRequestId = body?.checkoutRequestId ?? body?.CheckoutRequestID ?? body?.Body?.stkCallback?.CheckoutRequestID;
+    const resultCode = body?.Body?.stkCallback?.ResultCode ?? body?.resultCode ?? body?.result_code;
+    const resultDesc = body?.Body?.stkCallback?.ResultDesc ?? body?.resultDesc ?? body?.result_description;
+
+    // If metadata contains a dealId, update that deal's status
+    const metadata = body?.Body?.stkCallback?.CallbackMetadata ?? body?.metadata ?? body?.CallbackMetadata;
+    let dealId: string | undefined;
+    if (metadata && Array.isArray(metadata?.Item)) {
+      for (const item of metadata.Item) {
+        if (item?.Name?.toLowerCase?.()?.includes("reference") || item?.Name?.toLowerCase?.()?.includes("deal")) {
+          dealId = item?.Value;
+          break;
+        }
+      }
+    }
+
+    if (!dealId && body?.reference) dealId = body.reference;
+
+    if (dealId) {
+      try {
+        const status = resultCode === 0 ? "released" : "failed";
+        db.update(dealsTable).set({ status }).where(dealsTable.dealId.equals(dealId)).run();
+      } catch (e) {
+        req.log?.warn?.({ err: e }, "Failed to update deal from callback");
+      }
+    }
+
+    // Respond 200 to acknowledge webhook
+    res.status(200).json({ success: true });
+  } catch (err) {
+    req.log?.error?.({ err }, "Error handling STK callback");
+    // Still respond 200 to avoid retries if the provider expects it; adjust if you prefer 500 for debugging
+    res.status(200).json({ success: false, message: "error processing callback" });
   }
 });
 
