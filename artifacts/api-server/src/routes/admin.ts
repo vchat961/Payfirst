@@ -5,9 +5,11 @@ import { dealsTable } from "../lib/deals-schema";
 
 const router: IRouter = Router();
 
+const ADMIN_KEY = process.env["ADMIN_KEY"]?.trim() || "";
+
 function requireAdminKey(req: Request, res: Response, next: NextFunction) {
-  const key = req.headers["x-admin-key"];
-  if (!key || key !== process.env["ADMIN_KEY"]) {
+  const key = (req.headers["x-admin-key"] as string)?.trim();
+  if (!key || key !== ADMIN_KEY) {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
